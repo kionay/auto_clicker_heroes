@@ -48,7 +48,7 @@ def main():
             run_upgrades(bbox)
         if ADVANCING_STAGES and counter % 20 == 0:
             click_area("next level", bbox)
-        if counter % 2 == 0:
+        if counter % 10 == 0:
             current_health = screen_scraping.get_approx_hp_state(bbox)
             hp_delta = abs(current_health - previous_health)
             print(f"health @ {current_health:.0%}")

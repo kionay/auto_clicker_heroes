@@ -2,7 +2,6 @@ from typing import Tuple
 import colorsys
 
 from PIL import ImageGrab, Image
-from black import color_diff
 
 from bounding_box import BoundingBox
 
