@@ -16,7 +16,7 @@ RUN_UPGRADES = False
 ADVANCING_STAGES = False
 
 
-def GetWindowRectFromName(name: str) -> BoundingBox:
+def get_window_rect_from_name(name: str) -> BoundingBox:
     hwnd = ctypes.windll.user32.FindWindowW(0, name)
     rect = ctypes.wintypes.RECT()
     ctypes.windll.user32.GetWindowRect(hwnd, ctypes.pointer(rect))
@@ -40,7 +40,7 @@ def run_upgrades(bbox: BoundingBox) -> None:
 
 
 def main():
-    bbox = GetWindowRectFromName("Clicker Heroes")
+    bbox = get_window_rect_from_name("Clicker Heroes")
     counter = 1
     previous_health = 0
     while not keyboard.is_pressed("q"):
