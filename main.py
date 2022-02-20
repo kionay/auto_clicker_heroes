@@ -1,9 +1,11 @@
 import pyautogui
 import keyboard
 import ctypes
+from datetime import datetime
 
 import screen_scraping
 from bounding_box import BoundingBox
+from state import State
 
 AREAS = {
     "main": (850, 400),
@@ -12,8 +14,8 @@ AREAS = {
     "previous level": (790, 73),
 }
 
-RUN_UPGRADES = False
-ADVANCING_STAGES = False
+RUN_UPGRADES = True
+ADVANCING_STAGES = True
 
 
 def get_window_rect_from_name(name: str) -> BoundingBox:
@@ -38,26 +40,57 @@ def run_upgrades(bbox: BoundingBox) -> None:
         pyautogui.click(clickable_upgrade[0], clickable_upgrade[1])
         click_area("main", bbox)
 
+def killed_boss(state: State) -> State:
+    state.monsters_killed_this_level += 1
+    return state
 
-def main():
+def killed_monster_can_advance(state: State) -> State:
+    state.monsters_killed_this_level += 1
+    return state
+
+def advance_level(state: State, bbox: BoundingBox) -> State:
+    state.current_level += 1
+    state.monsters_killed_this_level = 0
+    
+    return state
+    
+
+def main(starting_level: int, starting_kills: int):
+    state = State(starting_level, starting_kills)
     bbox = get_window_rect_from_name("Clicker Heroes")
-    counter = 1
-    previous_health = 0
     while not keyboard.is_pressed("q"):
+        click_area("main", bbox)
         if RUN_UPGRADES:
             run_upgrades(bbox)
-        if ADVANCING_STAGES and counter % 20 == 0:
+
+        current_health = screen_scraping.get_approx_hp_state(bbox)
+        #print(f"health changed from {state.enemy_health:.0%} to {current_health:.0%}")
+        if current_health > .90 and state.enemy_health < .01:
+            # assume monster killed
+            # there is a chance that we can come SO close to killing a boss when it resets
+            #   that the health bar looks just like we killed it
+            #   this causes us to try to level up when we can't and desyncs the state from the actual game
+            #   i don't know how to solve this yet.
+            state.killed_monster()
+
+        elif current_health > .90 and current_health > state.enemy_health and state.is_fighting_boss:
+            # current > previous means it gained health
+            # assume boss timeout
+            state.boss_timed_out()
+
+        state.enemy_health = current_health
+        if state.due_to_advance:
             click_area("next level", bbox)
-        if counter % 10 == 0:
-            current_health = screen_scraping.get_approx_hp_state(bbox)
-            hp_delta = abs(current_health - previous_health)
-            print(f"health @ {current_health:.0%}")
-            if hp_delta > 0.7:
-                print(f"monster killed")
-            previous_health = current_health
-        click_area("main", bbox)
-        counter += 1
+            state.advanced_level()
+        if state.due_to_retreat:
+            click_area("previous level", bbox)
+            state.retreated_level()
+        if state.is_delayed_advancement:
+            state.delay_looped()
+
 
 
 if __name__ == "__main__":
-    main()
+    starting_level = 64
+    starting_kills = 7
+    main(starting_level, starting_kills)
