@@ -38,22 +38,7 @@ def click_area(area_name: str, bbox: BoundingBox) -> None:
 def run_upgrades(bbox: BoundingBox) -> None:
     for clickable_upgrade in screen_scraping.find_upgradable_heroes(bbox):
         pyautogui.click(clickable_upgrade[0], clickable_upgrade[1])
-        click_area("main", bbox)
-
-def killed_boss(state: State) -> State:
-    state.monsters_killed_this_level += 1
-    return state
-
-def killed_monster_can_advance(state: State) -> State:
-    state.monsters_killed_this_level += 1
-    return state
-
-def advance_level(state: State, bbox: BoundingBox) -> State:
-    state.current_level += 1
-    state.monsters_killed_this_level = 0
-    
-    return state
-    
+        click_area("main", bbox)   
 
 def main(starting_level: int, starting_kills: int):
     state = State(starting_level, starting_kills)

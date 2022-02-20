@@ -5,7 +5,7 @@ class State:
         self.monsters_killed_this_level = starting_monsters_killed
         self.is_delayed_advancement = False
         self.loops_left_in_delay = 0
-        self.enemy_health = 100
+        self.enemy_health = 1
         self.due_to_advance = False
         self.due_to_retreat = False
     
