@@ -1,11 +1,19 @@
+from concurrent.futures import Future
 import pyautogui
 import keyboard
 import ctypes
 from datetime import datetime
+import lox
 
 import screen_scraping
 from bounding_box import BoundingBox
 from state import State
+
+@lox.process(1)
+def always_click(x,y):
+    import pyautogui
+    while True:
+        pyautogui.click(x, y)
 
 AREAS = {
     "main": (850, 400),
@@ -40,16 +48,23 @@ def run_upgrades(bbox: BoundingBox) -> None:
         pyautogui.click(clickable_upgrade[0], clickable_upgrade[1])
         click_area("main", bbox)   
 
+def init_clicker_process(bbox: BoundingBox) -> Future:
+    area_x = AREAS["main"][0]
+    area_y = AREAS["main"][1]
+    x = bbox.x + area_x
+    y = bbox.y + area_y
+    print("starting other thread")
+    return always_click.scatter(x,y)
+
 def main(starting_level: int, starting_kills: int):
     state = State(starting_level, starting_kills)
     bbox = get_window_rect_from_name("Clicker Heroes")
+    main_clicker_future = init_clicker_process(bbox)
     while not keyboard.is_pressed("q"):
-        click_area("main", bbox)
         if RUN_UPGRADES:
             run_upgrades(bbox)
 
         current_health = screen_scraping.get_approx_hp_state(bbox)
-        #print(f"health changed from {state.enemy_health:.0%} to {current_health:.0%}")
         if current_health > .90 and state.enemy_health < .01:
             # assume monster killed
             # there is a chance that we can come SO close to killing a boss when it resets
@@ -72,10 +87,11 @@ def main(starting_level: int, starting_kills: int):
             state.retreated_level()
         if state.is_delayed_advancement:
             state.delay_looped()
+    main_clicker_future._pool.terminate()
 
 
 
 if __name__ == "__main__":
-    starting_level = 64
-    starting_kills = 7
+    starting_level = 61
+    starting_kills = 10
     main(starting_level, starting_kills)

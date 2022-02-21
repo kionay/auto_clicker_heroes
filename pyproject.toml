@@ -9,6 +9,8 @@ python = "^3.8"
 PyAutoGUI = "^0.9.53"
 Pillow = "^9.0.1"
 keyboard = "^0.13.5"
+lox = "^0.10.0"
+six = "^1.16.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
