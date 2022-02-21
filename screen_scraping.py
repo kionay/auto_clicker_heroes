@@ -40,7 +40,7 @@ def _is_close_to_color(rgb: Tuple, color: Tuple) -> bool:
 
 def find_upgradable_heroes(bbox: BoundingBox) -> Tuple:
     image = _screen_grab(bbox)
-    for i in range(image.height - 1):
+    for i in range(image.height - 1, 0, -1):
         pixel_color = image.getpixel((142, i))
         if _is_close_to_color(pixel_color, UPGRADABLE_HERO_COLOR):
             yield (142 + bbox.x, i + bbox.y)

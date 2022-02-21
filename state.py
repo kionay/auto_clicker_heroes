@@ -1,4 +1,3 @@
-
 class State:
     def __init__(self, starting_level: int, starting_monsters_killed: 10):
         self.current_level = starting_level
@@ -8,11 +7,11 @@ class State:
         self.enemy_health = 1
         self.due_to_advance = False
         self.due_to_retreat = False
-    
+
     @property
     def is_fighting_boss(self):
         return self.current_level % 5 == 0
-    
+
     def killed_monster(self) -> None:
         print("killed monster")
         self.monsters_killed_this_level += 1
@@ -22,7 +21,7 @@ class State:
         elif self.monsters_killed_this_level >= 10 and not self.is_delayed_advancement:
             print("\tit was a monster and we will advance")
             self.due_to_advance = True
-    
+
     def advanced_level(self) -> None:
         self.due_to_advance = False
         self.current_level += 1
@@ -41,7 +40,7 @@ class State:
         print("boss timed out, retreating")
         self.due_to_retreat = True
         self.is_delayed_advancement = True
-        self.loops_left_in_delay = 500
+        self.loops_left_in_delay = 1500
 
     def delay_looped(self) -> None:
         if self.loops_left_in_delay > 0:
@@ -49,4 +48,3 @@ class State:
         else:
             print("done delaying, can now advance")
             self.is_delayed_advancement = False
-        

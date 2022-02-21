@@ -9,11 +9,14 @@ import screen_scraping
 from bounding_box import BoundingBox
 from state import State
 
+
 @lox.process(1)
-def always_click(x,y):
+def always_click(x, y):
     import pyautogui
+
     while True:
         pyautogui.click(x, y)
+
 
 AREAS = {
     "main": (850, 400),
@@ -46,26 +49,27 @@ def click_area(area_name: str, bbox: BoundingBox) -> None:
 def run_upgrades(bbox: BoundingBox) -> None:
     for clickable_upgrade in screen_scraping.find_upgradable_heroes(bbox):
         pyautogui.click(clickable_upgrade[0], clickable_upgrade[1])
-        click_area("main", bbox)   
+        click_area("main", bbox)
 
-def init_clicker_process(bbox: BoundingBox) -> Future:
+
+def init_clicker_process(bbox: BoundingBox):
     area_x = AREAS["main"][0]
     area_y = AREAS["main"][1]
     x = bbox.x + area_x
     y = bbox.y + area_y
-    print("starting other thread")
-    return always_click.scatter(x,y)
+    return always_click.scatter(x, y)
+
 
 def main(starting_level: int, starting_kills: int):
     state = State(starting_level, starting_kills)
     bbox = get_window_rect_from_name("Clicker Heroes")
-    main_clicker_future = init_clicker_process(bbox)
+    main_clicker_process = init_clicker_process(bbox)
     while not keyboard.is_pressed("q"):
         if RUN_UPGRADES:
             run_upgrades(bbox)
 
         current_health = screen_scraping.get_approx_hp_state(bbox)
-        if current_health > .90 and state.enemy_health < .01:
+        if current_health > 0.90 and state.enemy_health < 0.01:
             # assume monster killed
             # there is a chance that we can come SO close to killing a boss when it resets
             #   that the health bar looks just like we killed it
@@ -73,7 +77,11 @@ def main(starting_level: int, starting_kills: int):
             #   i don't know how to solve this yet.
             state.killed_monster()
 
-        elif current_health > .90 and current_health > state.enemy_health and state.is_fighting_boss:
+        elif (
+            current_health > 0.90
+            and current_health > state.enemy_health
+            and state.is_fighting_boss
+        ):
             # current > previous means it gained health
             # assume boss timeout
             state.boss_timed_out()
@@ -87,11 +95,10 @@ def main(starting_level: int, starting_kills: int):
             state.retreated_level()
         if state.is_delayed_advancement:
             state.delay_looped()
-    main_clicker_future._pool.terminate()
-
+    main_clicker_process._pool.terminate()
 
 
 if __name__ == "__main__":
-    starting_level = 61
-    starting_kills = 10
+    starting_level = 69
+    starting_kills = 0
     main(starting_level, starting_kills)
