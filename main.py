@@ -23,10 +23,11 @@ AREAS = {
     "cid": (88, 257),
     "next level": (917, 73),
     "previous level": (790, 73),
+    "scroll down": (549,651),
 }
 
-RUN_UPGRADES = True
-ADVANCING_STAGES = True
+RUN_UPGRADES = False
+ADVANCING_STAGES = False
 
 
 def get_window_rect_from_name(name: str) -> BoundingBox:
@@ -49,6 +50,7 @@ def click_area(area_name: str, bbox: BoundingBox) -> None:
 def run_upgrades(bbox: BoundingBox) -> None:
     for clickable_upgrade in screen_scraping.find_upgradable_heroes(bbox):
         pyautogui.click(clickable_upgrade[0], clickable_upgrade[1])
+        pyautogui.click(clickable_upgrade[0] + 50,clickable_upgrade[1])
         click_area("main", bbox)
 
 
@@ -61,44 +63,47 @@ def init_clicker_process(bbox: BoundingBox):
 
 
 def main(starting_level: int, starting_kills: int):
-    state = State(starting_level, starting_kills)
+    # qstate = State(starting_level, starting_kills)
     bbox = get_window_rect_from_name("Clicker Heroes")
     main_clicker_process = init_clicker_process(bbox)
+    counter = 0
     while not keyboard.is_pressed("q"):
-        if RUN_UPGRADES:
+        if RUN_UPGRADES and counter % 100000 == 0:
             run_upgrades(bbox)
+            click_area("scroll down", bbox)
 
-        current_health = screen_scraping.get_approx_hp_state(bbox)
-        if current_health > 0.90 and state.enemy_health < 0.01:
-            # assume monster killed
-            # there is a chance that we can come SO close to killing a boss when it resets
-            #   that the health bar looks just like we killed it
-            #   this causes us to try to level up when we can't and desyncs the state from the actual game
-            #   i don't know how to solve this yet.
-            state.killed_monster()
+        # current_health = screen_scraping.get_approx_hp_state(bbox)
+        # if current_health > 0.90 and state.enemy_health < 0.01:
+        #     # assume monster killed
+        #     # there is a chance that we can come SO close to killing a boss when it resets
+        #     #   that the health bar looks just like we killed it
+        #     #   this causes us to try to level up when we can't and desyncs the state from the actual game
+        #     #   i don't know how to solve this yet.
+        #     state.killed_monster()
 
-        elif (
-            current_health > 0.90
-            and current_health > state.enemy_health
-            and state.is_fighting_boss
-        ):
-            # current > previous means it gained health
-            # assume boss timeout
-            state.boss_timed_out()
+        # elif (
+        #     current_health > 0.90
+        #     and current_health > state.enemy_health
+        #     and state.is_fighting_boss
+        # ):
+        #     # current > previous means it gained health
+        #     # assume boss timeout
+        #     state.boss_timed_out()
 
-        state.enemy_health = current_health
-        if state.due_to_advance:
-            click_area("next level", bbox)
-            state.advanced_level()
-        if state.due_to_retreat:
-            click_area("previous level", bbox)
-            state.retreated_level()
-        if state.is_delayed_advancement:
-            state.delay_looped()
+        # state.enemy_health = current_health
+        # if state.due_to_advance:
+        #     click_area("next level", bbox)
+        #     state.advanced_level()
+        # if state.due_to_retreat:
+        #     click_area("previous level", bbox)
+        #     state.retreated_level()
+        # if state.is_delayed_advancement:
+        #     state.delay_looped()
+        counter +=  1
     main_clicker_process._pool.terminate()
 
 
 if __name__ == "__main__":
-    starting_level = 69
-    starting_kills = 0
+    starting_level = 84
+    starting_kills = 1
     main(starting_level, starting_kills)
