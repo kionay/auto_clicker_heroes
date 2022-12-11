@@ -2,7 +2,7 @@
 name = "clicker_heroes"
 version = "0.1.0"
 description = ""
-authors = ["Patrick Childers <vbkizonay@gmail.com>"]
+authors = ["Patrick Childers <patrickchildersit@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
